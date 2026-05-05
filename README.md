@@ -6,6 +6,7 @@ Eine interaktive Browser-Implementierung von Conways Game of Life - einem klassi
 
 - ✨ Interaktive Canvas-basierte Visualisierung
 - 🎯 Klicke auf Zellen, um sie zum Leben zu erwecken oder zu töten
+- 🖱️ Fahre mit der Maus über Zellen, um sie interaktiv zu bearbeiten (Optional: Shift-Taste gedrückt halten)
 - ⚙️ Regelbare Geschwindigkeit der Simulation
 - 📊 Live-Statistiken (Generation & lebende Zellen)
 - 🔄 Verschiedene Gittergrößen (20x20 bis 100x100)
@@ -25,9 +26,10 @@ Das Game of Life basiert auf vier einfachen Regeln:
 
 1. **Öffne** `index.html` in deinem Browser
 2. **Klicke** auf Zellen, um sie zu aktivieren/deaktivieren
-3. **Starte** die Simulation mit dem "Start"-Button
-4. **Beobachte**, wie Zellen basierend auf den Regeln entstehen und vergehen
-5. **Passe** die Geschwindigkeit und Gittersize an
+3. **Fahre mit der Maus** über Zellen (mit gedrückter Shift-Taste), um diese interaktiv zu bearbeiten
+4. **Starte** die Simulation mit dem "Start"-Button
+5. **Beobachte**, wie Zellen basierend auf den Regeln entstehen und vergehen
+6. **Passe** die Geschwindigkeit und Gittersize an
 
 ## 📁 Dateistruktur
 
