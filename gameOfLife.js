@@ -1,0 +1,235 @@
+class GameOfLife {
+    constructor(gridSize = 30) {
+        this.gridSize = gridSize;
+        this.grid = [];
+        this.nextGrid = [];
+        this.generation = 0;
+        this.isRunning = false;
+        this.speed = 100;
+        this.animationId = null;
+        
+        // Canvas setup
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.initializeGrid();
+        this.setupCanvas();
+        this.draw();
+    }
+    
+    initializeGrid() {
+        this.grid = [];
+        for (let i = 0; i < this.gridSize; i++) {
+            this.grid[i] = [];
+            for (let j = 0; j < this.gridSize; j++) {
+                this.grid[i][j] = 0; // 0 = tot, 1 = lebendig
+            }
+        }
+        this.nextGrid = JSON.parse(JSON.stringify(this.grid));
+        this.generation = 0;
+    }
+    
+    setupCanvas() {
+        this.cellSize = Math.floor(Math.min(
+            (window.innerWidth - 80) / this.gridSize,
+            (window.innerHeight - 300) / this.gridSize,
+            15
+        ));
+        
+        this.canvas.width = this.gridSize * this.cellSize;
+        this.canvas.height = this.gridSize * this.cellSize;
+    }
+    
+    draw() {
+        // Gitter zeichnen
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Gitternetz
+        this.ctx.strokeStyle = '#e0e0e0';
+        this.ctx.lineWidth = 0.5;
+        for (let i = 0; i <= this.gridSize; i++) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(i * this.cellSize, 0);
+            this.ctx.lineTo(i * this.cellSize, this.canvas.height);
+            this.ctx.stroke();
+            
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, i * this.cellSize);
+            this.ctx.lineTo(this.canvas.width, i * this.cellSize);
+            this.ctx.stroke();
+        }
+        
+        // Zellen zeichnen
+        for (let i = 0; i < this.gridSize; i++) {
+            for (let j = 0; j < this.gridSize; j++) {
+                if (this.grid[i][j] === 1) {
+                    this.ctx.fillStyle = '#667eea';
+                    this.ctx.fillRect(
+                        j * this.cellSize + 1,
+                        i * this.cellSize + 1,
+                        this.cellSize - 2,
+                        this.cellSize - 2
+                    );
+                }
+            }
+        }
+        
+        this.updateStats();
+    }
+    
+    update() {
+        this.nextGrid = JSON.parse(JSON.stringify(this.grid));
+        
+        for (let i = 0; i < this.gridSize; i++) {
+            for (let j = 0; j < this.gridSize; j++) {
+                const neighbors = this.countNeighbors(i, j);
+                const isAlive = this.grid[i][j] === 1;
+                
+                // Conway's Game of Life Regeln
+                if (isAlive && (neighbors === 2 || neighbors === 3)) {
+                    this.nextGrid[i][j] = 1; // Zelle bleibt lebendig
+                } else if (!isAlive && neighbors === 3) {
+                    this.nextGrid[i][j] = 1; // Zelle wird lebendig
+                } else {
+                    this.nextGrid[i][j] = 0; // Zelle stirbt oder bleibt tot
+                }
+            }
+        }
+        
+        this.grid = this.nextGrid;
+        this.generation++;
+    }
+    
+    countNeighbors(row, col) {
+        let count = 0;
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) continue;
+                
+                const newRow = (row + i + this.gridSize) % this.gridSize;
+                const newCol = (col + j + this.gridSize) % this.gridSize;
+                
+                count += this.grid[newRow][newCol];
+            }
+        }
+        return count;
+    }
+    
+    toggleCell(row, col) {
+        if (row >= 0 && row < this.gridSize && col >= 0 && col < this.gridSize) {
+            this.grid[row][col] = this.grid[row][col] === 0 ? 1 : 0;
+            this.draw();
+        }
+    }
+    
+    start() {
+        if (!this.isRunning) {
+            this.isRunning = true;
+            this.gameLoop();
+        }
+    }
+    
+    pause() {
+        this.isRunning = false;
+        if (this.animationId) {
+            cancelAnimationFrame(this.animationId);
+        }
+    }
+    
+    reset() {
+        this.pause();
+        this.initializeGrid();
+        this.draw();
+    }
+    
+    gameLoop = () => {
+        if (this.isRunning) {
+            this.update();
+            this.draw();
+            
+            this.animationId = setTimeout(() => {
+                requestAnimationFrame(this.gameLoop);
+            }, this.speed);
+        }
+    }
+    
+    setSpeed(speed) {
+        this.speed = 550 - speed; // Invertiert: höherer Slider-Wert = schneller
+    }
+    
+    getLiveCount() {
+        let count = 0;
+        for (let i = 0; i < this.gridSize; i++) {
+            for (let j = 0; j < this.gridSize; j++) {
+                if (this.grid[i][j] === 1) count++;
+            }
+        }
+        return count;
+    }
+    
+    updateStats() {
+        document.getElementById('generation').textContent = this.generation;
+        document.getElementById('liveCells').textContent = this.getLiveCount();
+    }
+}
+
+// UI Setup
+let game = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    game = new GameOfLife(30);
+    
+    // Button Events
+    document.getElementById('startBtn').addEventListener('click', () => {
+        game.start();
+    });
+    
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+        game.pause();
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        game.reset();
+    });
+    
+    // Speed Control
+    document.getElementById('speed').addEventListener('input', (e) => {
+        const speed = e.target.value;
+        game.setSpeed(speed);
+        document.getElementById('speedValue').textContent = speed + 'ms';
+    });
+    
+    // Grid Size Change
+    document.getElementById('gridSize').addEventListener('change', (e) => {
+        const newSize = parseInt(e.target.value);
+        game.pause();
+        game = new GameOfLife(newSize);
+    });
+    
+    // Canvas Click to toggle cells
+    game.canvas.addEventListener('click', (e) => {
+        if (game.isRunning) return; // Nicht während Simulation ändern
+        
+        const rect = game.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const col = Math.floor(x / game.cellSize);
+        const row = Math.floor(y / game.cellSize);
+        
+        game.toggleCell(row, col);
+    });
+    
+    // Responsive Canvas
+    window.addEventListener('resize', () => {
+        if (game) {
+            const oldGrid = JSON.parse(JSON.stringify(game.grid));
+            const oldGen = game.generation;
+            game.setupCanvas();
+            game.grid = oldGrid;
+            game.generation = oldGen;
+            game.draw();
+        }
+    });
+});
