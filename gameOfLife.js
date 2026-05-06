@@ -16,6 +16,7 @@ class GameOfLife {
         
         this.initializeGrid();
         this.setupCanvas();
+        this.setupEventListeners();
         this.draw();
     }
     
@@ -40,6 +41,39 @@ class GameOfLife {
         
         this.canvas.width = this.gridSize * this.cellSize;
         this.canvas.height = this.gridSize * this.cellSize;
+    }
+    
+    setupEventListeners() {
+        // Canvas Click to toggle cells
+        this.canvas.addEventListener('click', (e) => {
+            if (this.isRunning) return; // Nicht während Simulation ändern
+            
+            const { row, col } = this.getRowColFromEvent(e);
+            this.toggleCell(row, col);
+        });
+        
+        // Canvas Mouse Down - Start der Maus-Aktivierung
+        this.canvas.addEventListener('mousedown', (e) => {
+            this.isMouseDown = true;
+        });
+        
+        // Canvas Mouse Up - Ende der Maus-Aktivierung
+        this.canvas.addEventListener('mouseup', () => {
+            this.isMouseDown = false;
+        });
+        
+        // Canvas Mouse Leave - Maus verlässt das Canvas
+        this.canvas.addEventListener('mouseleave', () => {
+            this.isMouseDown = false;
+        });
+        
+        // Canvas Mouse Move - Zellen beim Über-Fahren mit gedrückter Maustaste aktivieren
+        this.canvas.addEventListener('mousemove', (e) => {
+            if (!this.isMouseDown || this.isRunning) return; // Nur wenn Maus gedrückt ist und Simulation nicht läuft
+            
+            const { row, col } = this.getRowColFromEvent(e);
+            this.activateCell(row, col);
+        });
     }
     
     draw() {
@@ -229,37 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const newSize = parseInt(e.target.value);
         game.pause();
         game = new GameOfLife(newSize);
-    });
-    
-    // Canvas Click to toggle cells
-    game.canvas.addEventListener('click', (e) => {
-        if (game.isRunning) return; // Nicht während Simulation ändern
-        
-        const { row, col } = game.getRowColFromEvent(e);
-        game.toggleCell(row, col);
-    });
-    
-    // Canvas Mouse Down - Start der Maus-Aktivierung
-    game.canvas.addEventListener('mousedown', (e) => {
-        game.isMouseDown = true;
-    });
-    
-    // Canvas Mouse Up - Ende der Maus-Aktivierung
-    game.canvas.addEventListener('mouseup', () => {
-        game.isMouseDown = false;
-    });
-    
-    // Canvas Mouse Leave - Maus verlässt das Canvas
-    game.canvas.addEventListener('mouseleave', () => {
-        game.isMouseDown = false;
-    });
-    
-    // Canvas Mouse Move - Zellen beim Über-Fahren mit gedrückter Maustaste aktivieren
-    game.canvas.addEventListener('mousemove', (e) => {
-        if (!game.isMouseDown || game.isRunning) return; // Nur wenn Maus gedrückt ist und Simulation nicht läuft
-        
-        const { row, col } = game.getRowColFromEvent(e);
-        game.activateCell(row, col);
     });
     
     // Verfolgung der Shift-Taste (optional für zukünftige Erweiterungen)
