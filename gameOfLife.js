@@ -5,7 +5,7 @@ class GameOfLife {
         this.nextGrid = [];
         this.generation = 0;
         this.isRunning = false;
-        this.speed = 100;
+        this.speed = 50; // Doubled speed (halved delay)
         this.animationId = null;
         this.isMouseDown = false; // Verfolgung des Maus-Status
         this.shiftPressed = false; // Verfolgung der Shift-Taste
@@ -62,11 +62,12 @@ class GameOfLife {
             this.ctx.stroke();
         }
         
-        // Zellen zeichnen
+        // Zellen zeichnen - Pink und Orange Gradient
         for (let i = 0; i < this.gridSize; i++) {
             for (let j = 0; j < this.gridSize; j++) {
                 if (this.grid[i][j] === 1) {
-                    this.ctx.fillStyle = '#667eea';
+                    // Alterniere zwischen Pink (#ff1493) und Orange (#ff8c00)
+                    this.ctx.fillStyle = ((i + j) % 2 === 0) ? '#ff1493' : '#ff8c00';
                     this.ctx.fillRect(
                         j * this.cellSize + 1,
                         i * this.cellSize + 1,
@@ -178,7 +179,7 @@ class GameOfLife {
     }
     
     setSpeed(speed) {
-        this.speed = 550 - speed; // Invertiert: höherer Slider-Wert = schneller
+        this.speed = 275 - speed; // Invertiert: höherer Slider-Wert = schneller (doubled speed)
     }
     
     getLiveCount() {
@@ -285,4 +286,4 @@ document.addEventListener('DOMContentLoaded', () => {
             game.draw();
         }
     });
-}); 
+});
